@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>インテリア検討リスト</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --paper:#F6F2EA;
+      --paper-deep:#EFE8DA;
+      --ink:#2A2622;
+      --ink-soft:#6E665B;
+      --line:#E2D9C8;
+      --accent:#2F4538;      /* deep moss/indigo green */
+      --accent-soft:#E7EDE4;
+      --rust:#B6562C;        /* terracotta for prices / highlights */
+      --rust-soft:#F6E6DC;
+      --gold:#C9A35A;
+    }
+
+    *{ -webkit-tap-highlight-color: transparent; }
+
+    body{
+      background-color: var(--paper);
+      color: var(--ink);
+      font-family: "Zen Kaku Gothic New", "Hiragino Sans", sans-serif;
+      background-image:
+        radial-gradient(1200px 600px at 100% -10%, rgba(47,69,56,0.06), transparent 60%),
+        radial-gradient(900px 500px at -10% 30%, rgba(182,86,44,0.05), transparent 55%);
+    }
+
+    .font-display{ font-family: "Shippori Mincho", serif; }
+    .font-mono{ font-family: "Space Grotesk", monospace; }
+
+    /* texture */
+    .grain{
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      opacity: 0.5; mix-blend-mode: multiply;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+    }
+
+    .hide-scrollbar::-webkit-scrollbar{ display:none; }
+    .hide-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
+    body.modal-open{ overflow:hidden; }
+
+    /* nav pill */
+    .nav-pill{
+      font-family: "Zen Kaku Gothic New", sans-serif;
+      letter-spacing: .02em;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.55);
+      color: var(--ink-soft);
+      transition: all .25s ease;
+      white-space: nowrap;
+    }
+    .nav-pill:hover{
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .nav-pill .count{
+      font-family: "Space Grotesk", monospace;
+      font-size: 10px;
+      opacity:.6;
+    }
+
+    /* section heading rule */
+    .section-rule{
+      background: linear-gradient(to right, var(--ink) 0 28px, var(--line) 28px 100%);
+      height: 1px;
+    }
+    .eyebrow{
+      font-family: "Space Grotesk", monospace;
+      letter-spacing: .18em;
+      font-size: 10px;
+      color: var(--ink-soft);
+    }
+
+    /* card */
+    .item-card{
+      background: #FFFFFF;
+      border: 1px solid var(--line);
+      transition: transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s ease, border-color .35s ease;
+    }
+    .item-card:hover{
+      transform: translateY(-3px);
+      box-shadow: 0 14px 30px -18px rgba(42,38,34,0.35), 0 4px 10px -6px rgba(42,38,34,0.15);
+      border-color: #D8CCB6;
+    }
+    .item-img-wrap{
+      position: relative;
+      overflow: hidden;
+      background:
+        repeating-linear-gradient(135deg, #ECE5D6 0 14px, #E6DECC 14px 28px);
+    }
+    .item-img-wrap img{
+      transition: transform .6s cubic-bezier(.2,.7,.2,1), filter .6s ease;
+      filter: saturate(.97);
+    }
+    .item-card:hover .item-img-wrap img{
+      transform: scale(1.045);
+    }
+
+    .price-tag{
+      font-family: "Space Grotesk", monospace;
+      letter-spacing: .01em;
+    }
+    .price-na{
+      font-family: "Space Grotesk", monospace;
+      color: var(--ink-soft);
+      border: 1px dashed var(--line);
+    }
+
+    .brand-tag{
+      font-family: "Space Grotesk", monospace;
+      letter-spacing: .06em;
+    }
+
+    /* edit button */
+    .edit-btn{
+      backdrop-filter: blur(6px);
+      background: rgba(255,255,255,0.78);
+      border: 1px solid rgba(42,38,34,0.08);
+    }
+
+    /* add card */
+    .add-card{
+      border: 1.5px dashed var(--line);
+      color: var(--ink-soft);
+      transition: all .25s ease;
+      background: rgba(255,255,255,0.35);
+    }
+    .add-card:hover{
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    /* modal */
+    .modal-card{
+      background: var(--paper);
+      border: 1px solid var(--line);
+    }
+    .field-label{
+      font-family: "Space Grotesk", monospace;
+      letter-spacing: .08em;
+      font-size: 10px;
+      color: var(--ink-soft);
+    }
+    .field-input, .field-select, .field-textarea{
+      background: #FFFFFF;
+      border: 1px solid var(--line);
+      color: var(--ink);
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+    .field-input:focus, .field-select:focus, .field-textarea:focus{
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .btn-primary{
+      background: var(--ink);
+      color: var(--paper);
+      transition: background .2s ease, transform .15s ease;
+    }
+    .btn-primary:hover{ background: var(--accent); }
+    .btn-primary:active{ transform: scale(.98); }
+
+    .btn-ghost{
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--ink-soft);
+      transition: all .2s ease;
+    }
+    .btn-ghost:hover{ border-color: var(--ink); color: var(--ink); }
+
+    .btn-danger{
+      color: var(--rust);
+      transition: background .2s ease;
+    }
+    .btn-danger:hover{ background: var(--rust-soft); }
+
+    /* header */
+    .site-header{
+      background: rgba(246,242,234,0.86);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .logo-mark{
+      width: 34px; height: 34px;
+      border: 1.5px solid var(--ink);
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    .logo-mark::after{
+      content:"";
+      position:absolute; inset: 4px;
+      border: 1px solid var(--ink);
+      opacity: .35;
+    }
+
+    /* fab */
+    .fab{
+      background: var(--ink);
+      color: var(--paper);
+      box-shadow: 0 10px 30px -10px rgba(42,38,34,0.5);
+      transition: transform .2s ease, background .2s ease;
+    }
+    .fab:hover{ background: var(--accent); transform: translateY(-2px); }
+
+    .scroll-top{
+      background: #FFFFFF;
+      border: 1px solid var(--line);
+      transition: all .2s ease;
+    }
+    .scroll-top:hover{ border-color: var(--ink); transform: translateY(-2px); }
+
+    @keyframes fadeUp{
+      from{ opacity:0; transform: translateY(10px); }
+      to{ opacity:1; transform: translateY(0); }
+    }
+    .fade-up{ animation: fadeUp .5s ease both; }
+
+    /* category select chips in modal */
+    .cat-chip{
+      border: 1px solid var(--line);
+      transition: all .15s ease;
+      font-size: 11px;
+    }
+    .cat-chip.active{
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .empty-illust{
+      border: 1px dashed var(--line);
+      background: repeating-linear-gradient(135deg, #ECE5D6 0 12px, #F1EAD8 12px 24px);
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-24">
+  <div class="grain"></div>
+
+  <header class="site-header sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-5 py-4 sm:px-8 lg:px-10 relative z-10">
+      <div class="flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="logo-mark">
+            <i data-lucide="home" class="w-4 h-4" style="color:var(--ink)"></i>
+          </div>
+          <div>
+            <h1 class="font-display text-lg sm:text-xl font-bold leading-none tracking-wide">インテリア検討リスト</h1>
+            <p class="eyebrow mt-1">INTERIOR SHORTLIST — JP 2026</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            onclick="openAddCategoryModal()"
+            class="hidden sm:flex items-center gap-1.5 btn-ghost px-3 py-2 rounded-full text-xs font-bold"
+          >
+            <i data-lucide="folder-plus" class="w-3.5 h-3.5"></i>
+            カテゴリー追加
+          </button>
+          <button
+            onclick="openAddModal()"
+            class="flex items-center gap-1.5 btn-primary px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold"
+          >
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">アイテム追加</span>
+            <span class="sm:hidden">追加</span>
+          </button>
+        </div>
+      </div>
+
+      <nav class="mt-4 overflow-x-auto pb-1 -mb-1 hide-scrollbar">
+        <ul id="nav-container" class="flex gap-2 w-max"></ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-container" class="max-w-6xl mx-auto px-5 py-10 sm:px-8 lg:px-10"></main>
+
+  <!-- mobile add category fab -->
+  <button
+    onclick="openAddCategoryModal()"
+    class="sm:hidden fixed bottom-6 left-6 fab w-12 h-12 rounded-full flex items-center justify-center z-30"
+    aria-label="カテゴリーを追加"
+  >
+    <i data-lucide="folder-plus" class="w-5 h-5"></i>
+  </button>
+
+  <button
+    onclick="scrollToTop()"
+    class="fixed bottom-6 right-6 p-3 scroll-top rounded-full z-30 group"
+    aria-label="トップへ戻る"
+  >
+    <i data-lucide="arrow-up" class="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" style="color:var(--ink)"></i>
+  </button>
+
+  <!-- ============ ITEM MODAL ============ -->
+  <div id="item-modal" class="hidden fixed inset-0 bg-black/45 z-50 flex items-center justify-center p-4">
+    <div class="modal-card rounded-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden shadow-2xl relative">
+      <div class="p-5 border-b border-[var(--line)] flex justify-between items-start">
+        <div>
+          <p class="eyebrow mb-1" id="modal-eyebrow">ITEM</p>
+          <h3 id="modal-title" class="font-display text-lg font-bold">アイテムの追加</h3>
+        </div>
+        <button onclick="closeModal()" class="p-1.5 rounded-full hover:bg-black/5 transition-colors" style="color:var(--ink-soft)">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-5 overflow-y-auto flex-grow hide-scrollbar space-y-4">
+        <form id="item-form" class="space-y-4">
+          <input type="hidden" id="form-mode" value="add">
+          <input type="hidden" id="form-edit-category-id" value="">
+          <input type="hidden" id="form-edit-item-index" value="">
+
+          <div id="category-select-container">
+            <label class="field-label block mb-1.5">カテゴリー</label>
+            <select id="form-category" class="w-full field-select rounded-lg px-3 py-2.5 text-sm"></select>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="field-label block mb-1.5">ブランド</label>
+              <input type="text" id="form-brand" placeholder="例: IKEA" required class="w-full field-input rounded-lg px-3 py-2.5 text-sm">
+            </div>
+            <div>
+              <label class="field-label block mb-1.5">商品名</label>
+              <input type="text" id="form-name" placeholder="例: ベストー" required class="w-full field-input rounded-lg px-3 py-2.5 text-sm">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="field-label block mb-1.5">価格 (税込・任意)</label>
+              <input type="text" id="form-price" placeholder="例: ¥7,999" class="w-full field-input rounded-lg px-3 py-2.5 text-sm price-tag">
+            </div>
+            <div>
+              <label class="field-label block mb-1.5">サイズ・色など (任意)</label>
+              <input type="text" id="form-spec" placeholder="例: 180x42x38 cm" class="w-full field-input rounded-lg px-3 py-2.5 text-sm">
+            </div>
+          </div>
+
+          <div>
+            <label class="field-label block mb-1.5">商品URL</label>
+            <input type="url" id="form-url" placeholder="https://..." class="w-full field-input rounded-lg px-3 py-2.5 text-sm">
+          </div>
+
+          <div>
+            <label class="field-label block mb-1.5">画像URL（空欄なら自動でイメージ画像）</label>
+            <input type="url" id="form-img-url" placeholder="https://..." class="w-full field-input rounded-lg px-3 py-2.5 text-sm">
+          </div>
+
+          <div>
+            <label class="field-label block mb-1.5">メモ・補足</label>
+            <textarea id="form-note" rows="3" placeholder="検討事項や設置場所など..." class="w-full field-textarea rounded-lg px-3 py-2.5 text-sm"></textarea>
+          </div>
+        </form>
+      </div>
+
+      <div class="p-4 border-t border-[var(--line)] flex justify-between items-center">
+        <button id="btn-delete" type="button" onclick="deleteItem()" class="hidden btn-danger px-3 py-2 rounded-lg text-xs font-bold">
+          <span class="flex items-center gap-1.5"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i>削除</span>
+        </button>
+        <div class="flex gap-2 ml-auto">
+          <button type="button" onclick="closeModal()" class="px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold btn-ghost">
+            キャンセル
+          </button>
+          <button type="button" onclick="saveItem()" class="px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold btn-primary">
+            保存する
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CATEGORY MODAL ============ -->
+  <div id="category-modal" class="hidden fixed inset-0 bg-black/45 z-50 flex items-center justify-center p-4">
+    <div class="modal-card rounded-2xl w-full max-w-sm max-h-[90vh] flex flex-col overflow-hidden shadow-2xl relative">
+      <div class="p-5 border-b border-[var(--line)] flex justify-between items-start">
+        <div>
+          <p class="eyebrow mb-1" id="cat-modal-eyebrow">CATEGORY</p>
+          <h3 id="cat-modal-title" class="font-display text-lg font-bold">カテゴリーの追加</h3>
+        </div>
+        <button onclick="closeCategoryModal()" class="p-1.5 rounded-full hover:bg-black/5 transition-colors" style="color:var(--ink-soft)">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-5 overflow-y-auto flex-grow hide-scrollbar space-y-4">
+        <input type="hidden" id="cat-form-mode" value="add">
+        <input type="hidden" id="cat-form-id" value="">
+
+        <div>
+          <label class="field-label block mb-1.5">カテゴリー名</label>
+          <input type="text" id="cat-form-title" placeholder="例: 観葉植物" class="w-full field-input rounded-lg px-3 py-2.5 text-sm">
+        </div>
+
+        <div>
+          <label class="field-label block mb-1.5">背景イメージURL（任意・未設定アイテム用）</label>
+          <input type="url" id="cat-form-image" placeholder="https://..." class="w-full field-input rounded-lg px-3 py-2.5 text-sm">
+          <p class="text-[11px] mt-1.5" style="color:var(--ink-soft)">未入力の場合は自動でプレースホルダーになります</p>
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-[var(--line)] flex justify-between items-center">
+        <button id="cat-btn-delete" type="button" onclick="deleteCategory()" class="hidden btn-danger px-3 py-2 rounded-lg text-xs font-bold">
+          <span class="flex items-center gap-1.5"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i>カテゴリーを削除</span>
+        </button>
+        <div class="flex gap-2 ml-auto">
+          <button type="button" onclick="closeCategoryModal()" class="px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold btn-ghost">
+            キャンセル
+          </button>
+          <button type="button" onclick="saveCategory()" class="px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold btn-primary">
+            保存する
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ===========================================================
+       初期データ（価格は2026年6月時点でのIKEA/ニトリ/LOWYA等の
+       公開ページに基づくおおよその税込価格。店舗・期間限定価格・
+       セールにより変動するため目安としてご利用ください）
+    =========================================================== */
+    const defaultCategories = [
+      {
+        id: "ceiling-lights",
+        title: "照明（天井）",
+        defaultImage: "https://images.unsplash.com/photo-1565814329452-e1efa11c5e89?auto=format&fit=crop&q=80&w=500",
+        items: [
+          { brand: "IKEA", name: "ストックホルム2025", price: "¥7,999", spec: "ペンダントランプ / 50cm", note: "食卓の上", url: "https://www.ikea.com/jp/ja/p/stockholm-2025-pendant-lamp-white-textile-brass-plated-90585993/", imageUrl: "" },
+          { brand: "IKEA", name: "クルースナーテ", price: "¥1,299", spec: "シーリングスポット 2灯", note: "寝室用", url: "https://www.ikea.com/jp/ja/p/krusnate-ceiling-spotlight-with-2-spots-white-20564183/", imageUrl: "" },
+          { brand: "IKEA", name: "ロークフリ", price: "¥3,499", spec: "シーリングスポット 3灯", note: "かっこいいけど寝室ならあり？", url: "https://www.ikea.com/jp/ja/p/roekfri-ceiling-spotlight-with-3-spots-aluminium-colour-40577617/", imageUrl: "" },
+          { brand: "楽天", name: "ライティングレール", price: "¥5,690〜", spec: "1.5m ダクトレール", note: "", url: "https://item.rakuten.co.jp/kyodoled/10001353/", imageUrl: "" },
+        ]
+      },
+      {
+        id: "room-lights",
+        title: "照明（ルームライト）",
+        defaultImage: "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&q=80&w=500",
+        items: [
+          { brand: "IKEA", name: "リングスタ", price: "¥5,898", spec: "フロアランプ / 153cm", note: "", url: "https://www.ikea.com/jp/ja/p/ringsta-skaftet-floor-lamp-white-brass-s19387412/", imageUrl: "" },
+          { brand: "IKEA", name: "ラウテルス", price: "¥9,990", spec: "フロアランプ / 高さ119–151cm", note: "", url: "https://www.ikea.com/jp/ja/p/lauters-floor-lamp-ash-white-00405053/", imageUrl: "" },
+          { brand: "IKEA", name: "ショーマクト", price: "¥6,999", spec: "フロアランプ 2スポット / 156cm", note: "", url: "https://www.ikea.com/jp/ja/p/sjoemakt-floor-lamp-with-2-spot-beige-ash-30595674/", imageUrl: "" },
+          { brand: "IKEA", name: "ストックホルム2025", price: "¥14,990", spec: "フロアランプ / 159cm", note: "", url: "https://www.ikea.com/jp/ja/p/stockholm-2025-floor-lamp-white-textile-brass-plated-10585925/", imageUrl: "" },
+        ]
+      },
+      {
+        id: "table-lamps",
+        title: "照明（テーブルランプ）",
+        defaultImage: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&q=80&w=500",
+        items: [
+          { brand: "IKEA", name: "ストルシーゲル", price: "¥1,999", spec: "テーブルランプ / 高さ30cm", note: "", url: "https://www.ikea.com/jp/ja/p/storsegel-table-lamp-ash-white-10573569/", imageUrl: "" },
+          { brand: "IKEA", name: "ストックホルム2025", price: "¥7,999", spec: "テーブルランプ / 65cm", note: "", url: "https://www.ikea.com/jp/ja/p/stockholm-2025-table-lamp-white-textile-brass-plated-50585933/", imageUrl: "" },
+          { brand: "IKEA", name: "ハルガット", price: "¥6,999", spec: "テーブルランプ 調光可能 / 49cm", note: "", url: "https://www.ikea.com/jp/ja/p/halgatt-table-lamp-dimmable-beige-brown-ceramic-10601261/", imageUrl: "" },
+        ]
+      },
+      {
+        id: "tv-boards",
+        title: "テレビボード",
+        defaultImage: "https://images.unsplash.com/photo-1593696140826-c58b021acf8b?auto=format&fit=crop&q=80&w=500",
+        items: [
+          { brand: "IKEA", name: "ベストー", price: "¥22,490", spec: "扉付き / 180x42x38cm", note: "オークなど", url: "https://www.ikea.com/jp/ja/p/besta-tv-bench-with-doors-white-stained-oak-effect-lappviken-white-stained-oak-effect-s59299140/#content", imageUrl: "" },
+          { brand: "IKEA", name: "ロードマンソー", price: "¥29,990", spec: "176x48x66cm / ウォールナット調", note: "", url: "https://www.ikea.com/jp/ja/p/radmansoe-tv-bench-brown-walnut-effect-20597819/", imageUrl: "" },
+          { brand: "IKEA", name: "トンスタード", price: "¥34,990", spec: "178x37x55cm / オーク材突き板", note: "オーク", url: "https://www.ikea.com/jp/ja/p/tonstad-tv-bench-oak-veneer-60489304/#content", imageUrl: "" },
+          { brand: "ニトリ", name: "テレビスタンド", price: "価格未確認", spec: "", note: "何かと組み合わせて中浮きにしたい", url: "https://www.nitori-net.jp/ec/product/5655011s/reviews/", imageUrl: "" },
+        ]
+      },
+      {
+        id: "coffee-tables",
+        title: "コーヒーテーブル",
+        defaultImage: "https://images.unsplash.com/photo-1532372320572-cda25653a26d?auto=format&fit=crop&q=80&w=500",
+        items: [
+          { brand: "IKEA", name: "ボルゲビー", price: "¥15,990", spec: "直径70cm / バーチ材突き板", note: "", url: "https://www.ikea.com/jp/ja/p/borgeby-coffee-table-birch-veneer-70449402/", imageUrl: "" },
+          { brand: "IKEA", name: "トルクニング", price: "¥11,990", spec: "プーフ収納付き / 直径50cm", note: "", url: "https://www.ikea.com/jp/ja/p/tolkning-pouffe-with-storage-handmade-rattan-70512667/", imageUrl: "" },
+          { brand: "LOWYA", name: "ブランチ", price: "¥12,990", spec: "ライトブラウン", note: "ライトブラウン", url: "https://www.low-ya.com/goods/F402_G1065?goodsUnitId=23707", imageUrl: "" },
+        ]
+      },
+      {
+        id: "shelves",
+        title: "棚",
+        defaultImage: "https://images.unsplash.com/photo-1595514535313-bd511e2f94b1?auto=format&fit=crop&q=80&w=500",
+        items: [
+          { brand: "IKEA", name: "カラックス", price: "¥8,999〜", spec: "シェルフユニット / サイズ複数", note: "", url: "https://www.ikea.com/jp/ja/cat/kallax-series-27534/?page=2", imageUrl: "" },
+          { brand: "IKEA", name: "スクルーヴビー", price: "¥4,999", spec: "コーヒーテーブル / 60x60cm（期間限定価格）", note: "", url: "https://www.ikea.com/jp/ja/p/skruvby-coffee-table-white-20531989/", imageUrl: "" },
+        ]
+      },
+      {
+        id: "rugs",
+        title: "ラグ",
+        defaultImage: "https://images.unsplash.com/photo-1575414003593-eea402553731?auto=format&fit=crop&q=80&w=500",
+        items: [
+          { brand: "IKEA", name: "ティプヒデ", price: "¥1,499", spec: "平織り / 120x180cm", note: "", url: "https://www.ikea.com/jp/ja/p/tiphede-rug-flatwoven-natural-black-00456759/", imageUrl: "" },
+          { brand: "IKEA", name: "リードスティグ", price: "¥3,999", spec: "平織り / 133x195cm（期間限定価格）", note: "", url: "https://www.ikea.com/jp/ja/p/ridstig-rug-flatwoven-off-white-green-40600967/", imageUrl: "" },
+          { brand: "IKEA", name: "ローハルス", price: "¥9,990", spec: "平織り（ジュート） / 133x195cm", note: "", url: "https://www.ikea.com/jp/ja/p/lohals-rug-flatwoven-natural-50511287/", imageUrl: "" },
+          { brand: "IKEA", name: "スタレクリンテ", price: "¥2,999", spec: "平織り / 120x180cm", note: "", url: "https://www.ikea.com/jp/ja/p/starreklinte-rug-flatwoven-natural-black-00569134/", imageUrl: "" },
+          { brand: "ニトリ", name: "アクセントラグ（リラシャグ）", price: "¥7,990", spec: "133X190", note: "133X190", url: "https://www.nitori-net.jp/ec/product/7232601s/", imageUrl: "" },
+          { brand: "ニトリ", name: "アクセントラグ（ORW33）", price: "価格未確認", spec: "133X190", note: "133X190", url: "https://www.nitori-net.jp/ec/product/2113100000455s/", imageUrl: "" },
+          { brand: "ニトリ", name: "多機能日本製ラグIV", price: "価格未確認", spec: "130x185cm / 撥水・防ダニ・抗菌", note: "撥水加工で汚れに強い", url: "https://www.nitori-net.jp/ec/product/7226427s/", imageUrl: "" },
+        ]
+      },
+      {
+        id: "others",
+        title: "その他",
+        defaultImage: "https://images.unsplash.com/photo-1505693314120-0d443867891c?auto=format&fit=crop&q=80&w=500",
+        items: [
+          { brand: "IKEA", name: "サンダレード", price: "¥5,999", spec: "プーフ / 直径45cm", note: "", url: "https://www.ikea.com/jp/ja/p/sandared-pouffe-beige-70385315/", imageUrl: "" },
+        ]
+      }
+    ];
+
+    let categories = [];
+
+    const loadData = () => {
+      const savedData = localStorage.getItem('interiorListDataV2');
+      if (savedData) {
+        categories = JSON.parse(savedData);
+      } else {
+        const legacy = localStorage.getItem('interiorListData');
+        if (legacy) {
+          // migrate legacy data, adding empty price/spec fields
+          const parsed = JSON.parse(legacy);
+          categories = parsed.map(cat => ({
+            ...cat,
+            items: cat.items.map(it => ({ price: '', spec: '', ...it }))
+          }));
+        } else {
+          categories = JSON.parse(JSON.stringify(defaultCategories));
+        }
+      }
+    };
+
+    const saveData = () => {
+      localStorage.setItem('interiorListDataV2', JSON.stringify(categories));
+    };
+
+    const getBrandColor = (brand) => {
+      switch ((brand || '').toUpperCase()) {
+        case 'IKEA': return 'text-white';
+        case '楽天': return 'text-white';
+        case 'ニトリ': return 'text-white';
+        case 'LOWYA': return 'text-white';
+        default: return 'text-white';
+      }
+    };
+    const getBrandBg = (brand) => {
+      switch ((brand || '').toUpperCase()) {
+        case 'IKEA': return '#2454A6';
+        case '楽天': return '#BF2A2A';
+        case 'ニトリ': return '#1F8C7A';
+        case 'LOWYA': return '#3A352E';
+        default: return '#6E665B';
+      }
+    };
+
+    const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    const handleScrollToSection = (id) => {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    const slugify = (str) => {
+      const base = (str || 'category')
+        .toString()
+        .trim()
+        .toLowerCase()
+        .replace(/[^\w\u3040-\u30ff\u3400-\u9fff]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      let id = base || 'category';
+      let i = 1;
+      while (categories.some(c => c.id === id)) {
+        id = `${base}-${i++}`;
+      }
+      return id;
+    };
+
+    const totalForCategory = (cat) => {
+      let sum = 0, counted = 0;
+      cat.items.forEach(it => {
+        const n = parsePrice(it.price);
+        if (n !== null) { sum += n; counted++; }
+      });
+      return { sum, counted, total: cat.items.length };
+    };
+
+    // extracts a leading numeric yen value, ignoring "〜" ranges (uses the lower bound)
+    const parsePrice = (priceStr) => {
+      if (!priceStr) return null;
+      const match = priceStr.replace(/,/g, '').match(/¥?\s*([0-9]+)/);
+      if (!match) return null;
+      return parseInt(match[1], 10);
+    };
+
+    const formatYen = (n) => `¥${n.toLocaleString('ja-JP')}`;
+
+    /* ===================== RENDER ===================== */
+    const render = () => {
+      const navContainer = document.getElementById('nav-container');
+      const mainContainer = document.getElementById('main-container');
+
+      navContainer.innerHTML = categories.map(category => `
+        <li>
+          <button
+            onclick="handleScrollToSection('${category.id}')"
+            class="nav-pill px-4 py-2 rounded-full text-xs sm:text-[13px] font-bold flex items-center gap-1.5"
+          >
+            ${category.title}
+            <span class="count">${category.items.length}</span>
+          </button>
+        </li>
+      `).join('') + `
+        <li>
+          <button
+            onclick="openAddCategoryModal()"
+            class="nav-pill px-4 py-2 rounded-full text-xs sm:text-[13px] font-bold flex items-center gap-1.5"
+            style="border-style:dashed;"
+          >
+            <i data-lucide="plus" class="w-3 h-3"></i>
+            カテゴリー
+          </button>
+        </li>
+      `;
+
+      const selectEl = document.getElementById('form-category');
+      selectEl.innerHTML = categories.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
+
+      mainContainer.innerHTML = categories.map((category, catIndex) => {
+        const { sum, counted, total } = totalForCategory(category);
+        const sumLabel = counted > 0
+          ? `小計 ${formatYen(sum)}${counted < total ? `（${counted}/${total}点）` : ''}`
+          : '価格未確認';
+
+        return `
+        <section id="${category.id}" class="mb-16 pt-2 scroll-mt-28 fade-up">
+          <div class="flex items-end justify-between gap-4 mb-1">
+            <div class="flex items-baseline gap-3">
+              <span class="font-display text-2xl sm:text-3xl font-bold tracking-tight">${category.title}</span>
+              <span class="eyebrow hidden sm:inline">${String(catIndex + 1).padStart(2,'0')} / ${String(categories.length).padStart(2,'0')}</span>
+            </div>
+            <div class="flex items-center gap-3 shrink-0">
+              <span class="price-tag text-xs sm:text-sm font-bold" style="color:var(--rust)">${sumLabel}</span>
+              <button
+                onclick="openEditCategoryModal('${category.id}')"
+                class="p-1.5 rounded-full hover:bg-black/5 transition-colors"
+                style="color:var(--ink-soft)"
+                aria-label="カテゴリーを編集"
+              >
+                <i data-lucide="settings" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+          <div class="section-rule mb-6"></div>
+          <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            ${category.items.map((item, itemIndex) => renderItemCard(category, item, itemIndex)).join('')}
+            <button
+              onclick="openAddModalFor('${category.id}')"
+              class="add-card rounded-2xl flex flex-col items-center justify-center gap-2 py-10 text-xs sm:text-sm font-bold"
+            >
+              <i data-lucide="plus" class="w-5 h-5"></i>
+              アイテムを追加
+            </button>
+          </div>
+        </section>
+      `;
+      }).join('');
+
+      lucide.createIcons();
+    };
+
+    const renderItemCard = (category, item, itemIndex) => {
+      const imgSrc = item.imageUrl || category.defaultImage;
+      const fallbackSrc = 'https://placehold.co/500x500/ECE5D6/8A7F6C?text=' + encodeURIComponent(item.name || '');
+      const isDummyImg = !item.imageUrl;
+      const priceNum = parsePrice(item.price);
+      const hasPrice = !!(item.price && item.price.trim());
+
+      return `
+        <div class="group item-card rounded-2xl overflow-hidden flex flex-col h-full relative">
+          <button
+            onclick="openEditModal('${category.id}', ${itemIndex})"
+            class="absolute top-2.5 right-2.5 z-10 edit-btn p-2 rounded-full opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity"
+            aria-label="編集する"
+          >
+            <i data-lucide="pencil" class="w-3.5 h-3.5" style="color:var(--ink)"></i>
+          </button>
+          <div class="aspect-square item-img-wrap">
+            <img
+              src="${imgSrc}"
+              alt="${item.name}"
+              class="w-full h-full object-cover"
+              onerror="this.onerror=null; this.src='${fallbackSrc}';"
+            />
+            ${isDummyImg ? `
+              <div class="absolute bottom-2 right-2 bg-black/45 text-white/90 text-[10px] px-2 py-1 rounded-full backdrop-blur-sm pointer-events-none tracking-wide">
+                イメージ
+              </div>
+            ` : ''}
+            ${hasPrice ? `
+              <div class="absolute bottom-2 left-2 price-tag bg-white/92 backdrop-blur-sm text-[11px] sm:text-xs font-bold px-2.5 py-1 rounded-full" style="color:${priceNum !== null ? 'var(--rust)' : 'var(--ink-soft)'}">
+                ${item.price}
+              </div>
+            ` : ''}
+          </div>
+          <div class="p-4 sm:p-5 flex flex-col flex-grow">
+            <div class="flex items-center justify-between mb-2 gap-2">
+              <span class="brand-tag text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-sm ${getBrandColor(item.brand)}" style="background:${getBrandBg(item.brand)}">
+                ${item.brand}
+              </span>
+              ${item.spec ? `<span class="text-[10px] sm:text-[11px] text-right leading-tight" style="color:var(--ink-soft)">${item.spec}</span>` : ''}
+            </div>
+            <h3 class="font-display text-base sm:text-lg leading-snug mb-2 font-bold line-clamp-2">
+              ${item.name}
+            </h3>
+            ${item.note ? `
+              <div class="flex items-start gap-1.5 text-xs sm:text-sm p-2.5 rounded-lg mb-4 mt-auto" style="color:var(--ink-soft); background:var(--paper-deep)">
+                <i data-lucide="info" class="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style="color:var(--gold)"></i>
+                <span class="leading-snug whitespace-pre-wrap">${item.note}</span>
+              </div>
+            ` : `<div class="mt-auto"></div>`}
+            <a
+              href="${item.url || '#'}"
+              target="${item.url ? '_blank' : '_self'}"
+              rel="noopener noreferrer"
+              class="mt-4 flex items-center justify-center gap-1.5 sm:gap-2 w-full py-2.5 px-4 text-white text-xs sm:text-sm font-bold rounded-xl transition-colors ${!item.url && 'opacity-40 pointer-events-none'}"
+              style="background:var(--ink)"
+              onmouseover="if('${item.url}') this.style.background='var(--accent)'"
+              onmouseout="this.style.background='var(--ink)'"
+            >
+              商品ページ
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+            </a>
+          </div>
+        </div>
+      `;
+    };
+
+    /* ===================== ITEM MODAL ===================== */
+    const itemModal = document.getElementById('item-modal');
+
+    const openAddModal = () => {
+      document.getElementById('modal-eyebrow').innerText = 'NEW ITEM';
+      document.getElementById('modal-title').innerText = 'アイテムの追加';
+      document.getElementById('form-mode').value = 'add';
+      document.getElementById('category-select-container').style.display = 'block';
+      document.getElementById('btn-delete').style.display = 'none';
+      document.getElementById('item-form').reset();
+      showModal(itemModal);
+    };
+
+    const openAddModalFor = (categoryId) => {
+      openAddModal();
+      document.getElementById('form-category').value = categoryId;
+    };
+
+    const openEditModal = (categoryId, itemIndex) => {
+      document.getElementById('modal-eyebrow').innerText = 'EDIT ITEM';
+      document.getElementById('modal-title').innerText = 'アイテムの編集';
+      document.getElementById('form-mode').value = 'edit';
+      document.getElementById('form-edit-category-id').value = categoryId;
+      document.getElementById('form-edit-item-index').value = itemIndex;
+
+      document.getElementById('category-select-container').style.display = 'none';
+      document.getElementById('btn-delete').style.display = 'block';
+
+      const category = categories.find(c => c.id === categoryId);
+      const item = category.items[itemIndex];
+
+      document.getElementById('form-brand').value = item.brand || '';
+      document.getElementById('form-name').value = item.name || '';
+      document.getElementById('form-price').value = item.price || '';
+      document.getElementById('form-spec').value = item.spec || '';
+      document.getElementById('form-url').value = item.url || '';
+      document.getElementById('form-img-url').value = item.imageUrl || '';
+      document.getElementById('form-note').value = item.note || '';
+
+      showModal(itemModal);
+    };
+
+    const saveItem = () => {
+      const mode = document.getElementById('form-mode').value;
+
+      const brand = document.getElementById('form-brand').value.trim();
+      const name = document.getElementById('form-name').value.trim();
+
+      if (!brand || !name) {
+        alert('ブランド名と商品名は必須です');
+        return;
+      }
+
+      const newItemData = {
+        brand,
+        name,
+        price: document.getElementById('form-price').value.trim(),
+        spec: document.getElementById('form-spec').value.trim(),
+        url: document.getElementById('form-url').value.trim(),
+        imageUrl: document.getElementById('form-img-url').value.trim(),
+        note: document.getElementById('form-note').value.trim()
+      };
+
+      if (mode === 'add') {
+        const categoryId = document.getElementById('form-category').value;
+        const category = categories.find(c => c.id === categoryId);
+        category.items.push(newItemData);
+      } else if (mode === 'edit') {
+        const categoryId = document.getElementById('form-edit-category-id').value;
+        const itemIndex = document.getElementById('form-edit-item-index').value;
+        const category = categories.find(c => c.id === categoryId);
+        category.items[itemIndex] = newItemData;
+      }
+
+      saveAndReload();
+    };
+
+    const deleteItem = () => {
+      if (!confirm('本当にこのアイテムを削除しますか？')) return;
+
+      const categoryId = document.getElementById('form-edit-category-id').value;
+      const itemIndex = document.getElementById('form-edit-item-index').value;
+      const category = categories.find(c => c.id === categoryId);
+
+      category.items.splice(itemIndex, 1);
+      saveAndReload();
+    };
+
+    /* ===================== CATEGORY MODAL ===================== */
+    const categoryModal = document.getElementById('category-modal');
+
+    const openAddCategoryModal = () => {
+      document.getElementById('cat-modal-eyebrow').innerText = 'NEW CATEGORY';
+      document.getElementById('cat-modal-title').innerText = 'カテゴリーの追加';
+      document.getElementById('cat-form-mode').value = 'add';
+      document.getElementById('cat-form-id').value = '';
+      document.getElementById('cat-form-title').value = '';
+      document.getElementById('cat-form-image').value = '';
+      document.getElementById('cat-btn-delete').style.display = 'none';
+      showModal(categoryModal);
+      setTimeout(() => document.getElementById('cat-form-title').focus(), 60);
+    };
+
+    const openEditCategoryModal = (categoryId) => {
+      const category = categories.find(c => c.id === categoryId);
+      document.getElementById('cat-modal-eyebrow').innerText = 'EDIT CATEGORY';
+      document.getElementById('cat-modal-title').innerText = 'カテゴリーの編集';
+      document.getElementById('cat-form-mode').value = 'edit';
+      document.getElementById('cat-form-id').value = categoryId;
+      document.getElementById('cat-form-title').value = category.title;
+      document.getElementById('cat-form-image').value = category.defaultImage && category.defaultImage.startsWith('https://images.unsplash.com') ? '' : (category.defaultImage || '');
+      document.getElementById('cat-btn-delete').style.display = categories.length > 1 ? 'block' : 'none';
+      showModal(categoryModal);
+    };
+
+    const FALLBACK_CATEGORY_IMAGE = 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&q=80&w=500';
+
+    const saveCategory = () => {
+      const mode = document.getElementById('cat-form-mode').value;
+      const title = document.getElementById('cat-form-title').value.trim();
+      const image = document.getElementById('cat-form-image').value.trim();
+
+      if (!title) {
+        alert('カテゴリー名を入力してください');
+        return;
+      }
+
+      if (mode === 'add') {
+        categories.push({
+          id: slugify(title),
+          title,
+          defaultImage: image || FALLBACK_CATEGORY_IMAGE,
+          items: []
+        });
+      } else if (mode === 'edit') {
+        const categoryId = document.getElementById('cat-form-id').value;
+        const category = categories.find(c => c.id === categoryId);
+        category.title = title;
+        if (image) category.defaultImage = image;
+      }
+
+      saveAndReloadCategory();
+    };
+
+    const deleteCategory = () => {
+      const categoryId = document.getElementById('cat-form-id').value;
+      const category = categories.find(c => c.id === categoryId);
+      const itemCount = category.items.length;
+
+      const msg = itemCount > 0
+        ? `「${category.title}」には${itemCount}件のアイテムがあります。カテゴリーごと削除しますか？`
+        : `「${category.title}」を削除しますか？`;
+
+      if (!confirm(msg)) return;
+
+      categories = categories.filter(c => c.id !== categoryId);
+      saveAndReloadCategory();
+    };
+
+    /* ===================== MODAL HELPERS ===================== */
+    const showModal = (modalEl) => {
+      modalEl.classList.remove('hidden');
+      document.body.classList.add('modal-open');
+    };
+
+    const closeModal = () => {
+      itemModal.classList.add('hidden');
+      document.body.classList.remove('modal-open');
+    };
+
+    const closeCategoryModal = () => {
+      categoryModal.classList.add('hidden');
+      document.body.classList.remove('modal-open');
+    };
+
+    const saveAndReload = () => {
+      saveData();
+      render();
+      closeModal();
+    };
+
+    const saveAndReloadCategory = () => {
+      saveData();
+      render();
+      closeCategoryModal();
+    };
+
+    // close modals on backdrop click
+    [itemModal, categoryModal].forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.classList.add('hidden');
+          document.body.classList.remove('modal-open');
+        }
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadData();
+      render();
+    });
+  </script>
+</body>
+</html>
